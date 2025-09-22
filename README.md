@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyPasswords - Password Manager
 
-## Getting Started
+MyPasswords is a password and card management application built using **Next.js**, **Clerk authentication**, and **Tailwind CSS**. This app allows users to securely store and manage their passwords and card details.
 
-First, run the development server:
+## 🚀 Features
+- **User Authentication** (Clerk)
+- **Add, View, and Manage Cards & Passwords**
+- **Responsive UI** with Tailwind CSS
+- **Secure Storage**
+- **Modern UI with Dark & Light Mode Support**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📦 Tech Stack
+- **Frontend**: Next.js, React, Tailwind CSS
+- **Authentication**: Clerk
+- **State Management**: React Context / useState
+- **Database**: Clerk Private Metadata
+
+## 📂 Folder Structure
+```
+root
+│── components
+│   ├── add-card.tsx
+│   ├── add-password.tsx
+│   ├── your-cards.tsx
+│   ├── your-passwords.tsx
+│── pages
+│   ├── index.tsx (Home Page)
+│── styles
+│   ├── globals.css
+│── public
+│── README.md
+│── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Installation & Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/your-username/mypasswords.git
+cd mypasswords
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2️⃣ Install Dependencies
+```bash
+npm install
+```
 
-## Learn More
+### 3️⃣ Set Up Environment Variables
+Create a `.env.local` file and add the required Clerk API keys:
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 4️⃣ Run the Development Server
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Visit **http://localhost:3000** to see the app in action.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚀 Deployment
+You can deploy this app on **Vercel** or **Netlify**.
 
-## Deploy on Vercel
+### Deploy to Vercel:
+```bash
+npm install -g vercel
+vercel
+```
+Follow the CLI instructions to complete deployment.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔒 Security Notes
+- Ensure that sensitive data is securely stored using Clerk's private metadata.
+- Avoid storing raw passwords in plaintext.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📝 License
+This project is licensed under the **MIT License**.
+
+
+
+
