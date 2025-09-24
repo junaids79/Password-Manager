@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -7,7 +9,12 @@ interface CardProps {
   cvv: number
 }
 
-export default function YourCards({ cards }: { cards: CardProps[] }) {
+interface YourCardsProps {
+  cards: CardProps[]
+  onEdit?: (card: CardProps) => void // optional now
+}
+
+export default function YourCards({ cards, onEdit }: YourCardsProps) {
   return (
     <div className="space-y-4 h-48 overflow-y-scroll">
       {cards.length === 0 && "No cards added"}
@@ -16,12 +23,15 @@ export default function YourCards({ cards }: { cards: CardProps[] }) {
           <CardContent className="flex items-center justify-between p-4">
             <div>
               <p className="font-semibold">
-                {card.cvv}  {card.cardNo}
+                {card.cvv} {card.cardNo}
               </p>
               <p className="text-sm text-muted-foreground">{card.expiryDate}</p>
-              <p className="text-sm text-muted-foreground">{card.cvv}</p>
             </div>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit && onEdit(card)} // safe check
+            >
               Edit
             </Button>
           </CardContent>
