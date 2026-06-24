@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -59,7 +57,7 @@ export default function AddCard() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
     if(user.user){
-    addCardServer(values.cardNumber, values.expiryDate, values.cvv , user?.user?.id)
+    addCardServer(values.cardNumber, values.expiryDate, parseInt(values.cvv, 10), user?.user?.id)
     toast.success("Card Added!")
     form.reset()
     router.refresh()

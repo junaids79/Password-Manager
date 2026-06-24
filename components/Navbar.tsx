@@ -17,7 +17,7 @@ import { SignedIn, SignedOut, SignUpButton, UserButton } from '@clerk/clerk-reac
 
 
 
-const navbar = () => {
+const Navbar = () => {
     const { setTheme } = useTheme()
 
   return (
@@ -65,4 +65,4 @@ const navbar = () => {
   )
 }
 
-export default navbar
+export default Navbar

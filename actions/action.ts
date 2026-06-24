@@ -21,13 +21,42 @@ export async function addCardServer(cardNo: string, expiry:string, cvv: number, 
  }
   await client.users.updateUserMetadata(userId, {
     privateMetadata: {
-    
-      cards: cards
-    
+      ...user.privateMetadata,
+      cards: cards,
     },
   })
 
 }
+
+export async function updateCardServer(
+  userId: string,
+  cardIndex: number,
+  cardNo: string,
+  expiry: string,
+  cvv: number
+) {
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+
+  if (!Array.isArray(user.privateMetadata.cards)) {
+    return
+  }
+
+  const cards = [...user.privateMetadata.cards]
+  if (cardIndex < 0 || cardIndex >= cards.length) {
+    return
+  }
+
+  cards[cardIndex] = { cardNo, expiry, cvv }
+
+  await client.users.updateUserMetadata(userId, {
+    privateMetadata: {
+      ...user.privateMetadata,
+      cards,
+    },
+  })
+}
+
 export async function addPasswordServer( website:string,
     username: string,
     password:string, userId:string ) {
