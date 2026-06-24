@@ -1,11 +1,12 @@
-"use client";
+"use client"
 
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Form,
   FormControl,
@@ -14,13 +15,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { addPasswordServer } from "@/actions/action";
-import { useUser } from "@clerk/nextjs";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+} from "@/components/ui/form"
+import PasswordInput from "@/components/password-input"
+import PasswordGenerator from "@/components/password-generator"
+import { useVault } from "@/context/vault-context"
+import toast from "react-hot-toast"
+import { X } from "lucide-react"
 
-// Define form schema with proper validation
 export const formSchema = z.object({
   username: z
     .string({ required_error: "Username is required" })
@@ -29,51 +30,63 @@ export const formSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, {
       message: "Username can only contain letters, numbers, underscores, and dashes",
     }),
-
   website: z
     .string({ required_error: "Website is required" })
     .url({ message: "Please enter a valid URL" })
     .startsWith("https://", { message: "URL must start with https://" })
     .or(z.string().startsWith("http://", { message: "URL must start with http://" })),
-
   password: z
     .string({ required_error: "Password is required" })
     .min(8, { message: "Password must be at least 8 characters" })
-    .max(100, { message: "Password cannot exceed 100 characters" })
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
-    .regex(/[0-9]/, { message: "Password must contain at least one number" })
-    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" })
-    .refine((value) => !/\s/.test(value), {
-      message: "Password cannot contain whitespace",
-    }),
-});
+    .max(100, { message: "Password cannot exceed 100 characters" }),
+  tags: z.array(z.string()).default([]),
+})
 
-// Type inference
-export type UserFormData = z.infer<typeof formSchema>;
+export type UserFormData = z.infer<typeof formSchema>
 
 export default function AddPassword() {
-  const user = useUser();
-  const router = useRouter()
+  const { addPassword, allTags } = useVault()
+  const [tagInput, setTagInput] = useState("")
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
 
-  // Define the form with default values
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<UserFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       website: "",
       username: "",
       password: "",
+      tags: [],
     },
-  });
+  })
 
-  // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    if (user.user) {
-      addPasswordServer(values.website, values.username, values.password, user.user.id);
-      toast.success("Password Added!");
-      form.reset();
-      router.refresh();
+  const addTag = (tag: string) => {
+    const trimmed = tag.trim()
+    if (!trimmed || selectedTags.includes(trimmed)) return
+    const updated = [...selectedTags, trimmed]
+    setSelectedTags(updated)
+    form.setValue("tags", updated)
+    setTagInput("")
+  }
+
+  const removeTag = (tag: string) => {
+    const updated = selectedTags.filter((t) => t !== tag)
+    setSelectedTags(updated)
+    form.setValue("tags", updated)
+  }
+
+  async function onSubmit(values: UserFormData) {
+    try {
+      await addPassword({
+        website: values.website,
+        username: values.username,
+        password: values.password,
+        tags: values.tags,
+      })
+      toast.success("Password Added!")
+      form.reset()
+      setSelectedTags([])
+    } catch {
+      toast.error("Failed to add password")
     }
   }
 
@@ -85,7 +98,6 @@ export default function AddPassword() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Website Field */}
             <FormField
               control={form.control}
               name="website"
@@ -93,15 +105,14 @@ export default function AddPassword() {
                 <FormItem>
                   <FormLabel>Website</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter Website URL" {...field} />
+                    <Input placeholder="https://example.com" {...field} />
                   </FormControl>
-                  <FormDescription>This is your Website URL.</FormDescription>
+                  <FormDescription>Your website URL.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Username Field */}
             <FormField
               control={form.control}
               name="username"
@@ -111,13 +122,11 @@ export default function AddPassword() {
                   <FormControl>
                     <Input placeholder="Enter Username" {...field} />
                   </FormControl>
-                  <FormDescription>Enter your username.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Password Field */}
             <FormField
               control={form.control}
               name="password"
@@ -125,18 +134,73 @@ export default function AddPassword() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter Password" {...field} />
+                    <PasswordInput placeholder="Enter Password" {...field} />
                   </FormControl>
-                  <FormDescription>Enter a strong password.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <PasswordGenerator
+              compact
+              onUsePassword={(pwd) => form.setValue("password", pwd, { shouldValidate: true })}
+            />
+
+            <div className="space-y-2">
+              <FormLabel>Tags</FormLabel>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add tag (e.g. Work)"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      addTag(tagInput)
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" onClick={() => addTag(tagInput)}>
+                  Add
+                </Button>
+              </div>
+              {allTags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {allTags
+                    .filter((t) => !selectedTags.includes(t))
+                    .map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => addTag(tag)}
+                        className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground hover:bg-secondary/80"
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                </div>
+              )}
+              {selectedTags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                    >
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} aria-label={`Remove ${tag}`}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <Button type="submit">Submit</Button>
           </form>
         </Form>
       </CardContent>
     </Card>
-  );
+  )
 }

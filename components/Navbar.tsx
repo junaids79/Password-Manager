@@ -21,12 +21,12 @@ const Navbar = () => {
     const { setTheme } = useTheme()
 
   return (
-   <nav className='flex justify-between items-center px-4 h-16 text-foreground bg-slate-500'>
+   <nav className='flex justify-between items-center px-4 h-16 text-foreground bg-card border-b border-border'>
     <span className='font-bold text-xl'>My-Passwords</span>
-    <ul className='flex items-center justify-start gap-5 '>
-        <li>Home</li>
-        <li>About us</li>
-        <li>contact us</li>
+    <ul className='flex items-center justify-start gap-5 text-muted-foreground'>
+        <li className="hover:text-foreground transition-colors">Home</li>
+        <li className="hover:text-foreground transition-colors">About us</li>
+        <li className="hover:text-foreground transition-colors">Contact us</li>
     </ul>
     <div className='flex gap-2 justify-center items-center'>
         

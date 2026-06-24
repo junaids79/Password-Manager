@@ -4,33 +4,44 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { updateCardServer } from "@/actions/action"
-import { useUser } from "@clerk/nextjs"
+import PasswordInput from "@/components/password-input"
+import { useVault } from "@/context/vault-context"
 import toast from "react-hot-toast"
-import { useRouter } from "next/navigation"
+import { Eye, EyeOff } from "lucide-react"
 
-interface CardProps {
-  cardNo: string
-  expiry?: string
-  expiryDate?: string
-  cvv: number
+function MaskedValue({ value, masked = true }: { value: string; masked?: boolean }) {
+  const [visible, setVisible] = useState(false)
+  const show = !masked || visible
+
+  return (
+    <div className="flex items-center gap-1">
+      <span className="font-mono text-sm">{show ? value : "••••"}</span>
+      {masked && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? "Hide" : "Show"}
+        >
+          {visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+        </Button>
+      )}
+    </div>
+  )
 }
 
-interface YourCardsProps {
-  cards: CardProps[]
-}
-
-export default function YourCards({ cards }: YourCardsProps) {
-  const user = useUser()
-  const router = useRouter()
+export default function YourCards() {
+  const { cards, updateCard } = useVault()
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ cardNo: "", expiry: "", cvv: "" })
 
-  const startEdit = (card: CardProps, index: number) => {
+  const startEdit = (card: (typeof cards)[0], index: number) => {
     setEditingIndex(index)
     setEditForm({
       cardNo: card.cardNo,
-      expiry: card.expiry ?? card.expiryDate ?? "",
+      expiry: card.expiry,
       cvv: String(card.cvv),
     })
   }
@@ -41,23 +52,30 @@ export default function YourCards({ cards }: YourCardsProps) {
   }
 
   const saveEdit = async (index: number) => {
-    if (!user.user) return
-
     const cvv = parseInt(editForm.cvv, 10)
     if (!editForm.cardNo || !editForm.expiry || Number.isNaN(cvv)) {
       toast.error("Please fill in all fields correctly")
       return
     }
 
-    await updateCardServer(user.user.id, index, editForm.cardNo, editForm.expiry, cvv)
-    toast.success("Card Updated!")
-    cancelEdit()
-    router.refresh()
+    try {
+      await updateCard(index, {
+        cardNo: editForm.cardNo,
+        expiry: editForm.expiry,
+        cvv,
+      })
+      toast.success("Card Updated!")
+      cancelEdit()
+    } catch {
+      toast.error("Failed to update card")
+    }
   }
 
   return (
-    <div className="space-y-4 h-48 overflow-y-scroll">
-      {cards.length === 0 && "No cards added"}
+    <div className="space-y-4 max-h-64 overflow-y-auto">
+      {cards.length === 0 && (
+        <p className="text-sm text-muted-foreground">No cards saved</p>
+      )}
       {cards.map((card, index) => (
         <Card key={card.cardNo || index}>
           <CardContent className="flex items-center justify-between p-4">
@@ -73,7 +91,7 @@ export default function YourCards({ cards }: YourCardsProps) {
                   value={editForm.expiry}
                   onChange={(e) => setEditForm({ ...editForm, expiry: e.target.value })}
                 />
-                <Input
+                <PasswordInput
                   placeholder="CVV"
                   value={editForm.cvv}
                   onChange={(e) => setEditForm({ ...editForm, cvv: e.target.value })}
@@ -89,12 +107,13 @@ export default function YourCards({ cards }: YourCardsProps) {
               </div>
             ) : (
               <>
-                <div>
+                <div className="space-y-1">
                   <p className="font-semibold">
-                    {card.cvv} {card.cardNo}
+                    <MaskedValue value={card.cardNo} />
                   </p>
+                  <p className="text-sm text-muted-foreground">{card.expiry}</p>
                   <p className="text-sm text-muted-foreground">
-                    {card.expiry ?? card.expiryDate}
+                    CVV: <MaskedValue value={String(card.cvv)} masked />
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => startEdit(card, index)}>

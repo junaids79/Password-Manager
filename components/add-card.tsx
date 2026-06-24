@@ -1,11 +1,10 @@
-"use client";
+"use client"
 
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -14,36 +13,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { addCardServer } from "@/actions/action";
-import { useUser } from "@clerk/nextjs";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-// Define form schema with proper validation
+} from "@/components/ui/form"
+import PasswordInput from "@/components/password-input"
+import { Input } from "@/components/ui/input"
+import { useVault } from "@/context/vault-context"
+import toast from "react-hot-toast"
+
 const formSchema = z.object({
   cardNumber: z
     .string()
     .min(16, { message: "Card number must be at least 16 digits." })
     .max(19, { message: "Card number cannot exceed 19 digits." })
     .regex(/^\d+$/, { message: "Card number must contain only digits." }),
-
   expiryDate: z
     .string()
     .regex(/^(0[1-9]|1[0-2])\/\d{2}$/, {
       message: "Expiry date must be in MM/YY format.",
     }),
-
   cvv: z
     .string()
     .length(3, { message: "CVV must be exactly 3 digits." })
     .regex(/^\d{3,4}$/, { message: "CVV must be 3 or 4 digits." }),
-});
+})
 
 export default function AddCard() {
-  const user= useUser()
-  const router= useRouter()
+  const { addCard } = useVault()
 
-  // 1. Define the form with default values
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,18 +46,22 @@ export default function AddCard() {
       expiryDate: "",
       cvv: "",
     },
-  });
+  })
 
-  // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    if(user.user){
-    addCardServer(values.cardNumber, values.expiryDate, parseInt(values.cvv, 10), user?.user?.id)
-    toast.success("Card Added!")
-    form.reset()
-    router.refresh()
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await addCard({
+        cardNo: values.cardNumber,
+        expiry: values.expiryDate,
+        cvv: parseInt(values.cvv, 10),
+      })
+      toast.success("Card Added!")
+      form.reset()
+    } catch {
+      toast.error("Failed to add card")
+    }
   }
-  }
+
   return (
     <Card>
       <CardHeader>
@@ -71,7 +70,6 @@ export default function AddCard() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Card Number Field */}
             <FormField
               control={form.control}
               name="cardNumber"
@@ -87,7 +85,6 @@ export default function AddCard() {
               )}
             />
 
-            {/* Expiry Date Field */}
             <FormField
               control={form.control}
               name="expiryDate"
@@ -97,15 +94,12 @@ export default function AddCard() {
                   <FormControl>
                     <Input placeholder="MM/YY" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Enter expiry date in MM/YY format.
-                  </FormDescription>
+                  <FormDescription>Enter expiry date in MM/YY format.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* CVV Field */}
             <FormField
               control={form.control}
               name="cvv"
@@ -113,7 +107,7 @@ export default function AddCard() {
                 <FormItem>
                   <FormLabel>CVV</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Card CVV" {...field} />
+                    <PasswordInput placeholder="Your Card CVV" {...field} />
                   </FormControl>
                   <FormDescription>3-digit or 4-digit CVV.</FormDescription>
                   <FormMessage />
@@ -126,5 +120,5 @@ export default function AddCard() {
         </Form>
       </CardContent>
     </Card>
-  );
+  )
 }
