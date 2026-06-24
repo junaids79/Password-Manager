@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import PasswordInput from "@/components/password-input"
-import PasswordGenerator from "@/components/password-generator"
 import { useVault } from "@/context/vault-context"
 import toast from "react-hot-toast"
 import { X } from "lucide-react"
@@ -139,11 +138,6 @@ export default function AddPassword() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-
-            <PasswordGenerator
-              compact
-              onUsePassword={(pwd) => form.setValue("password", pwd, { shouldValidate: true })}
             />
 
             <div className="space-y-2">
