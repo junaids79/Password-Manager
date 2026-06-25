@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,7 +35,6 @@ const formSchema = z.object({
 
   cvv: z
     .string()
-    .length(3, { message: "CVV must be exactly 3 digits." })
     .regex(/^\d{3,4}$/, { message: "CVV must be 3 or 4 digits." }),
 });
 
@@ -56,13 +53,21 @@ export default function AddCard() {
   });
 
   // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    if(user.user){
-    addCardServer(values.cardNumber, values.expiryDate, values.cvv , user?.user?.id)
-    toast.success("Card Added!")
-    form.reset()
-    router.refresh()
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (user.user) {
+      try {
+        await addCardServer(
+          values.cardNumber,
+          values.expiryDate,
+          parseInt(values.cvv, 10),
+          user.user.id
+        )
+        toast.success("Card Added!")
+        form.reset()
+        router.refresh()
+      } catch {
+        toast.error("Failed to add card")
+      }
   }
   }
   return (

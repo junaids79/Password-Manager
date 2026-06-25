@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -69,13 +67,16 @@ export default function AddPassword() {
   });
 
   // Handle form submission
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     if (user.user) {
-      addPasswordServer(values.website, values.username, values.password, user.user.id);
-      toast.success("Password Added!");
-      form.reset();
-      router.refresh();
+      try {
+        await addPasswordServer(values.website, values.username, values.password, user.user.id);
+        toast.success("Password Added!");
+        form.reset();
+        router.refresh();
+      } catch {
+        toast.error("Failed to add password");
+      }
     }
   }
 
