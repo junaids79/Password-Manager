@@ -15,7 +15,7 @@ function MaskedValue({ value, masked = true }: { value: string; masked?: boolean
 
   return (
     <div className="flex items-center gap-1">
-      <span className="font-mono text-sm">{show ? value : "••••"}</span>
+      <span className="font-mono text-sm">{show ? value : "****"}</span>
       {masked && (
         <Button
           type="button"

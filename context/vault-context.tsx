@@ -44,8 +44,6 @@ interface VaultContextValue {
 
 const VaultContext = createContext<VaultContextValue | null>(null)
 
-const EMPTY_VAULT: VaultData = { passwords: [], cards: [] }
-
 function extractTags(passwords: PasswordEntry[]): string[] {
   const tagSet = new Set<string>()
   for (const p of passwords) {
@@ -96,34 +94,28 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
   const unlockWithKey = useCallback(async (key: CryptoKey, salt: string) => {
     keyRef.current = key
     saltRef.current = salt
+    let nextPasswords: PasswordEntry[] = []
+    let nextCards: CardEntry[] = []
 
     if (metadata.encryptedPasswords) {
       const payload = parseEncrypted(metadata.encryptedPasswords)
       if (!payload) throw new Error("Invalid encrypted passwords")
       const decryptedPasswords = await decryptData<PasswordEntry[]>(payload, key)
-      setPasswords(
-        decryptedPasswords.map((p) => ({
-          ...p,
-          tags: p.tags ?? [],
-        }))
-      )
+      nextPasswords = decryptedPasswords.map((p) => ({
+        ...p,
+        tags: p.tags ?? [],
+      }))
     } else if (metadata.legacyPasswords) {
-      setPasswords(metadata.legacyPasswords)
-    } else {
-      setPasswords([])
+      nextPasswords = metadata.legacyPasswords
     }
 
     if (metadata.encryptedCards) {
       const payload = parseEncrypted(metadata.encryptedCards)
       if (!payload) throw new Error("Invalid encrypted cards")
-      setCards(await decryptData<CardEntry[]>(payload, key))
+      nextCards = await decryptData<CardEntry[]>(payload, key)
     } else if (metadata.legacyCards) {
-      setCards(metadata.legacyCards)
-    } else {
-      setCards([])
+      nextCards = metadata.legacyCards
     }
-
-    setIsUnlocked(true)
 
     const hasLegacy =
       !metadata.encryptedPasswords &&
@@ -131,12 +123,12 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
       ((metadata.legacyPasswords?.length ?? 0) > 0 ||
         (metadata.legacyCards?.length ?? 0) > 0)
     if (hasLegacy && keyRef.current) {
-      const data: VaultData = {
-        passwords: metadata.legacyPasswords ?? [],
-        cards: metadata.legacyCards ?? [],
-      }
-      await persistVault(data)
+      await persistVault({ passwords: nextPasswords, cards: nextCards })
     }
+
+    setPasswords(nextPasswords)
+    setCards(nextCards)
+    setIsUnlocked(true)
   }, [metadata, persistVault])
 
   const unlock = useCallback(
@@ -162,10 +154,10 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
           passwords: metadata.legacyPasswords ?? [],
           cards: metadata.legacyCards ?? [],
         }
+        await persistVault(data)
         setPasswords(data.passwords)
         setCards(data.cards)
         setIsUnlocked(true)
-        await persistVault(data)
         return true
       }
 
@@ -185,10 +177,10 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
         passwords: metadata.legacyPasswords ?? [],
         cards: metadata.legacyCards ?? [],
       }
+      await persistVault(data)
       setPasswords(data.passwords)
       setCards(data.cards)
       setIsUnlocked(true)
-      await persistVault(data)
     },
     [metadata, persistVault]
   )
@@ -207,18 +199,21 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
         tags: entry.tags ?? [],
       }
       const updated = [...passwords, newEntry]
-      setPasswords(updated)
       await persistVault({ passwords: updated, cards })
+      setPasswords(updated)
     },
     [passwords, cards, persistVault]
   )
 
   const updatePassword = useCallback(
     async (index: number, entry: PasswordEntry) => {
+      if (index < 0 || index >= passwords.length) {
+        throw new Error("Password entry not found")
+      }
       const updated = [...passwords]
       updated[index] = entry
-      setPasswords(updated)
       await persistVault({ passwords: updated, cards })
+      setPasswords(updated)
     },
     [passwords, cards, persistVault]
   )
@@ -226,18 +221,21 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
   const addCard = useCallback(
     async (entry: CardEntry) => {
       const updated = [...cards, entry]
-      setCards(updated)
       await persistVault({ passwords, cards: updated })
+      setCards(updated)
     },
     [passwords, cards, persistVault]
   )
 
   const updateCard = useCallback(
     async (index: number, entry: CardEntry) => {
+      if (index < 0 || index >= cards.length) {
+        throw new Error("Card entry not found")
+      }
       const updated = [...cards]
       updated[index] = entry
-      setCards(updated)
       await persistVault({ passwords, cards: updated })
+      setCards(updated)
     },
     [passwords, cards, persistVault]
   )
@@ -263,6 +261,7 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
     [
       isUnlocked,
       isInitialized,
+      needsSetup,
       passwords,
       cards,
       allTags,

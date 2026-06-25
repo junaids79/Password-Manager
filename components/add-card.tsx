@@ -32,7 +32,6 @@ const formSchema = z.object({
     }),
   cvv: z
     .string()
-    .length(3, { message: "CVV must be exactly 3 digits." })
     .regex(/^\d{3,4}$/, { message: "CVV must be 3 or 4 digits." }),
 })
 

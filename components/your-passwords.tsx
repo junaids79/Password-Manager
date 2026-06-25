@@ -18,7 +18,7 @@ function PasswordReveal({ password }: { password: string }) {
   return (
     <div className="flex items-center gap-1">
       <span className="text-sm text-muted-foreground font-mono">
-        {visible ? password : "••••••••"}
+        {visible ? password : "********"}
       </span>
       <Button
         type="button"
