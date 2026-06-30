@@ -12,10 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { SignInButton } from '@clerk/nextjs'
-import { SignedIn, SignedOut, SignUpButton, UserButton } from '@clerk/clerk-react'
-
-
+import { SignInButton, Show, SignUpButton, UserButton } from '@clerk/nextjs'
 
 const Navbar = () => {
     const { setTheme } = useTheme()
@@ -52,13 +49,13 @@ const Navbar = () => {
       </DropdownMenuContent>
     </DropdownMenu>
     
-    <SignedOut>
+    <Show when="signed-out">
               <SignInButton />
               <SignUpButton />
-            </SignedOut>
-            <SignedIn>
+            </Show>
+            <Show when="signed-in">
               <UserButton />
-            </SignedIn>
+            </Show>
        
 </div>
    </nav>
