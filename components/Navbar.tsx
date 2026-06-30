@@ -18,15 +18,14 @@ const Navbar = () => {
     const { setTheme } = useTheme()
 
   return (
-   <nav className='flex justify-between items-center px-4 h-16 text-foreground bg-card border-b border-border'>
-    <span className='font-bold text-xl'>My-Passwords</span>
-    {/* <ul className='flex items-center justify-start gap-5 text-muted-foreground'>
-        {/* <li className="hover:text-foreground transition-colors">Home</li>
-        <li className="hover:text-foreground transition-colors">About us</li>
-        <li className="hover:text-foreground transition-colors">Contact us</li> */}
+   <nav className='sticky top-0 z-50 flex justify-between items-center px-6 h-16 text-foreground glass-card border-b'>
+    <span className='font-bold text-xl gradient-text'>My-Passwords</span>
+    <ul className='hidden sm:flex items-center justify-start gap-6 text-sm text-muted-foreground'>
+        <li className="hover:text-foreground transition-colors cursor-pointer">Home</li>
+        <li className="hover:text-foreground transition-colors cursor-pointer">About us</li>
+        <li className="hover:text-foreground transition-colors cursor-pointer">Contact us</li>
+    </ul>
     <div className='flex gap-2 justify-center items-center'>
-        
-  
         <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">

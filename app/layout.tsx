@@ -2,7 +2,11 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css";
 import Navbar from '@/components/Navbar'
-import {Toaster} from "react-hot-toast"
+import { Toaster } from "react-hot-toast"
+import { Inter } from "next/font/google"
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+
 export default function RootLayout({
   children,
 }: {
@@ -11,18 +15,23 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="min-h-screen bg-background text-foreground antialiased">
+        <body className={`${inter.variable} min-h-screen bg-background text-foreground antialiased font-sans`}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
-                      <Navbar/>
-                      <Toaster
-  position="top-center"
-  reverseOrder={false}
-/>
+            <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+              <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-violet-600/30 blur-3xl" />
+              <div className="absolute top-1/3 -right-32 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
+              <div className="absolute bottom-0 left-1/4 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
+            </div>
+            <Navbar />
+            <Toaster
+              position="top-center"
+              reverseOrder={false}
+            />
             {children}
           </ThemeProvider>
         </body>

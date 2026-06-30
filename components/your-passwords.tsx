@@ -9,7 +9,7 @@ import CopyButton from "@/components/copy-button"
 import { useVault } from "@/context/vault-context"
 import type { PasswordEntry } from "@/lib/types"
 import Link from "next/link"
-import { Eye, EyeOff, Pencil, Trash2, X } from "lucide-react"
+import { Eye, EyeOff, Pencil, Search, Trash2, X } from "lucide-react"
 import toast from "react-hot-toast"
 import { cn } from "@/lib/utils"
 
@@ -47,6 +47,7 @@ function getInitial(url: string) {
 export default function YourPasswords() {
   const { passwords, allTags, updatePassword, deletePassword } = useVault()
   const [filterTag, setFilterTag] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<PasswordEntry>({
     website: "",
@@ -56,9 +57,14 @@ export default function YourPasswords() {
   })
   const [editTagInput, setEditTagInput] = useState("")
 
-  const filtered = filterTag
-    ? passwords.filter((p) => p.tags?.includes(filterTag))
-    : passwords
+  const filtered = passwords.filter((p) => {
+    const matchesTag = filterTag ? p.tags?.includes(filterTag) : true
+    const query = searchQuery.trim().toLowerCase()
+    const matchesSearch = query
+      ? p.website.toLowerCase().includes(query) || p.username.toLowerCase().includes(query)
+      : true
+    return matchesTag && matchesSearch
+  })
 
   const startEdit = (entry: PasswordEntry, index: number) => {
     setEditingIndex(index)
@@ -103,6 +109,16 @@ export default function YourPasswords() {
 
   return (
     <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search passwords..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
       {allTags.length > 0 && (
         <div className="flex flex-wrap gap-1">
           <button
@@ -137,7 +153,7 @@ export default function YourPasswords() {
 
       <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
         {filtered.length === 0 && (
-          <p className="text-sm text-muted-foreground">No passwords saved</p>
+          <p className="text-sm text-muted-foreground">No passwords found</p>
         )}
         {filtered.map((entry, index) => {
           const realIndex = passwords.indexOf(entry)
