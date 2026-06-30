@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import PasswordInput from "@/components/password-input"
+import CopyButton from "@/components/copy-button"
 import { useVault } from "@/context/vault-context"
 import toast from "react-hot-toast"
-import { Eye, EyeOff } from "lucide-react"
+import { CreditCard, Eye, EyeOff, Trash2 } from "lucide-react"
 
 function MaskedValue({ value, masked = true }: { value: string; masked?: boolean }) {
   const [visible, setVisible] = useState(false)
@@ -33,7 +34,7 @@ function MaskedValue({ value, masked = true }: { value: string; masked?: boolean
 }
 
 export default function YourCards() {
-  const { cards, updateCard } = useVault()
+  const { cards, updateCard, deleteCard } = useVault()
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ cardNo: "", expiry: "", cvv: "" })
 
@@ -71,14 +72,24 @@ export default function YourCards() {
     }
   }
 
+  const handleDelete = async (index: number) => {
+    if (!window.confirm("Delete this card? This cannot be undone.")) return
+    try {
+      await deleteCard(index)
+      toast.success("Card deleted")
+    } catch {
+      toast.error("Failed to delete card")
+    }
+  }
+
   return (
-    <div className="space-y-4 max-h-64 overflow-y-auto">
+    <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
       {cards.length === 0 && (
         <p className="text-sm text-muted-foreground">No cards saved</p>
       )}
       {cards.map((card, index) => (
-        <Card key={card.cardNo || index}>
-          <CardContent className="flex items-center justify-between p-4">
+        <Card key={card.cardNo || index} className="transition-shadow hover:shadow-md">
+          <CardContent className="flex items-center justify-between gap-3 p-4">
             {editingIndex === index ? (
               <div className="flex flex-1 flex-col gap-2">
                 <Input
@@ -107,18 +118,34 @@ export default function YourCards() {
               </div>
             ) : (
               <>
-                <div className="space-y-1">
-                  <p className="font-semibold">
-                    <MaskedValue value={card.cardNo} />
-                  </p>
-                  <p className="text-sm text-muted-foreground">{card.expiry}</p>
-                  <p className="text-sm text-muted-foreground">
-                    CVV: <MaskedValue value={String(card.cvv)} masked />
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold">
+                      <MaskedValue value={card.cardNo} />
+                    </p>
+                    <p className="text-sm text-muted-foreground">{card.expiry}</p>
+                    <p className="text-sm text-muted-foreground">
+                      CVV: <MaskedValue value={String(card.cvv)} masked />
+                    </p>
+                  </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => startEdit(card, index)}>
-                  Edit
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <CopyButton value={card.cardNo} label="Card number copied!" />
+                  <Button variant="outline" size="sm" onClick={() => startEdit(card, index)}>
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(index)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </>
             )}
           </CardContent>

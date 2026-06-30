@@ -38,8 +38,10 @@ interface VaultContextValue {
   lock: () => void
   addPassword: (entry: Omit<PasswordEntry, "tags"> & { tags?: string[] }) => Promise<void>
   updatePassword: (index: number, entry: PasswordEntry) => Promise<void>
+  deletePassword: (index: number) => Promise<void>
   addCard: (entry: CardEntry) => Promise<void>
   updateCard: (index: number, entry: CardEntry) => Promise<void>
+  deleteCard: (index: number) => Promise<void>
 }
 
 const VaultContext = createContext<VaultContextValue | null>(null)
@@ -240,6 +242,30 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
     [passwords, cards, persistVault]
   )
 
+  const deletePassword = useCallback(
+    async (index: number) => {
+      if (index < 0 || index >= passwords.length) {
+        throw new Error("Password entry not found")
+      }
+      const updated = passwords.filter((_, i) => i !== index)
+      await persistVault({ passwords: updated, cards })
+      setPasswords(updated)
+    },
+    [passwords, cards, persistVault]
+  )
+
+  const deleteCard = useCallback(
+    async (index: number) => {
+      if (index < 0 || index >= cards.length) {
+        throw new Error("Card entry not found")
+      }
+      const updated = cards.filter((_, i) => i !== index)
+      await persistVault({ passwords, cards: updated })
+      setCards(updated)
+    },
+    [passwords, cards, persistVault]
+  )
+
   const allTags = useMemo(() => extractTags(passwords), [passwords])
 
   const value = useMemo(
@@ -255,8 +281,10 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
       lock,
       addPassword,
       updatePassword,
+      deletePassword,
       addCard,
       updateCard,
+      deleteCard,
     }),
     [
       isUnlocked,
@@ -270,8 +298,10 @@ export function VaultProvider({ userId, metadata, children }: VaultProviderProps
       lock,
       addPassword,
       updatePassword,
+      deletePassword,
       addCard,
       updateCard,
+      deleteCard,
     ]
   )
 
