@@ -35,6 +35,7 @@ export default function RootLayout({
               reverseOrder={false}
             />
             {children}
+            <Analytics/>
             <Footer />
           </ThemeProvider>
         </body>
