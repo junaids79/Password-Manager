@@ -19,12 +19,9 @@ const Navbar = () => {
 
   return (
    <nav className='sticky top-0 z-50 flex justify-between items-center px-6 h-16 text-foreground glass-card border-b'>
-    <span className='font-bold text-xl gradient-text'>My-Passwords</span>
-    <ul className='hidden sm:flex items-center justify-start gap-6 text-sm text-muted-foreground'>
-        <li className="hover:text-foreground transition-colors cursor-pointer">Home</li>
-        <li className="hover:text-foreground transition-colors cursor-pointer">About us</li>
-        <li className="hover:text-foreground transition-colors cursor-pointer">Contact us</li>
-    </ul>
+    <span className='font-bold text-xl gradient-text'>My-VaultX</span>
+       <span className='font-bold text-m gradient-text'>One Place for Every Key</span>
+
     <div className='flex gap-2 justify-center items-center'>
         <DropdownMenu>
       <DropdownMenuTrigger asChild>

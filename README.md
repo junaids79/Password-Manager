@@ -1,6 +1,6 @@
-# MyPasswords - Password Manager
+# MyPasswords - VaultX Manager
 
-MyPasswords is a password and card management application built using **Next.js**, **Clerk authentication**, and **Tailwind CSS**. This app allows users to securely store and manage their passwords and card details.
+VaultX is a password and card management application built using **Next.js**, **Clerk authentication**, and **Tailwind CSS**. This app allows users to securely store and manage their passwords and card details.
 
 ## 🚀 Features
 - **User Authentication** (Clerk)

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Lock, ShieldCheck, KeyRound } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "MyPasswords - Home",
-  description: "This is the homepage of my password manager",
+  title: "VaultX - Home",
+  description: "This is the homepage of my VaultX manager",
 }
 
 export default async function Home() {
@@ -23,7 +23,7 @@ export default async function Home() {
             End-to-end encrypted vault
           </div>
           <h1 className="text-4xl font-bold sm:text-5xl">
-            <span className="gradient-text">My Password Manager</span>
+            <span className="gradient-text">My VaultX Manager</span>
           </h1>
           <p className="text-muted-foreground">Sign in to access your encrypted vault.</p>
           <SignInButton>
@@ -44,7 +44,7 @@ export default async function Home() {
           End-to-end encrypted vault
         </div>
         <h1 className="text-4xl font-bold sm:text-5xl">
-          <span className="gradient-text">My Password Manager</span>
+          <span className="gradient-text"> VaultX Manager</span>
         </h1>
         <p className="mt-3 text-muted-foreground">
           Your passwords and cards are encrypted client-side with your master password.
