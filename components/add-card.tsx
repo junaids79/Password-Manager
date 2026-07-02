@@ -35,6 +35,15 @@ const formSchema = z.object({
     .regex(/^\d{3,4}$/, { message: "CVV must be 3 or 4 digits." }),
 })
 
+// Groups raw digits into "xxxx xxxx xxxx xxxx" for display only
+function formatCardNumber(digits: string) {
+  return digits
+    .replace(/\D/g, "")
+    .slice(0, 19)
+    .match(/.{1,4}/g)
+    ?.join(" ") ?? ""
+}
+
 export default function AddCard() {
   const { addCard } = useVault()
 
@@ -76,7 +85,19 @@ export default function AddCard() {
                 <FormItem>
                   <FormLabel>Card Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Card Number" {...field} />
+                    <Input
+                      placeholder="xxxx xxxx xxxx xxxx"
+                      inputMode="numeric"
+                      value={formatCardNumber(field.value)}
+                      onChange={(e) => {
+                        const rawDigits = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 19)
+                        field.onChange(rawDigits)
+                      }}
+                      maxLength={19} 
+                      className="tracking-widest"
+                    />
                   </FormControl>
                   <FormDescription>This is your Card Number.</FormDescription>
                   <FormMessage />
